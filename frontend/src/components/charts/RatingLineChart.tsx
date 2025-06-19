@@ -1,0 +1,1 @@
+// RatingLineChart.tsx component

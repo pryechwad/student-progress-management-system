@@ -1,0 +1,1 @@
+// StudentRow.tsx component

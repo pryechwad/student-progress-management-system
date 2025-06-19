@@ -1,0 +1,1 @@
+// AddStudentModal.tsx component

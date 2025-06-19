@@ -1,0 +1,1 @@
+// StudentTable.tsx component
