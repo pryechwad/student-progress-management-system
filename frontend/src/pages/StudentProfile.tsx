@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, BarChart, Bar } from 'recharts';
 
 // Helper to get date strings relative to today
-const today = new Date(2025, 5, 19); // June is month 5 (0-indexed)
+const today = new Date(2025, 5, 19); // June is month 5 (0-indexed
 function daysAgo(days: number) {
   const d = new Date(today);
   d.setDate(d.getDate() - days);

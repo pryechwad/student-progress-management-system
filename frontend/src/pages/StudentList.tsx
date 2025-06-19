@@ -10,6 +10,8 @@ interface Student {
   codeforcesHandle: string;
   currentRating: number;
   maxRating: number;
+  lastSyncedAt?: string; // ✅ add this
+  disableAutoEmail?: boolean; // ✅ add this
 }
 
 const StudentList: React.FC = () => {
@@ -35,9 +37,35 @@ const StudentList: React.FC = () => {
     setStudents(students.filter(s => s.id !== id));
   };
 
+  // ✅ NEW: Update student (for toggle)
+  const updateStudent = async (updatedStudent: Student) => {
+    await axios.put(`http://localhost:5000/api/students/${updatedStudent.id}`, updatedStudent);
+    setStudents(prev =>
+      prev.map(s => (s.id === updatedStudent.id ? updatedStudent : s))
+    );
+  };
+
   const downloadCSV = () => {
-    const header = ['Name', 'Email', 'Phone', 'Codeforces Handle', 'Current Rating', 'Max Rating'];
-    const rows = students.map(s => [s.name, s.email, s.phone, s.codeforcesHandle, s.currentRating, s.maxRating]);
+    const header = [
+      'Name',
+      'Email',
+      'Phone',
+      'Codeforces Handle',
+      'Current Rating',
+      'Max Rating',
+      'Last Synced At',
+      'Auto Reminder Enabled'
+    ];
+    const rows = students.map(s => [
+      s.name,
+      s.email,
+      s.phone,
+      s.codeforcesHandle,
+      s.currentRating,
+      s.maxRating,
+      s.lastSyncedAt || '',
+      s.disableAutoEmail ? 'No' : 'Yes'
+    ]);
     let csv = header.join(',') + '\n';
     csv += rows.map(r => r.join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -57,8 +85,18 @@ const StudentList: React.FC = () => {
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">Student List</h2>
         <div>
-          <button className="bg-green-600 text-white px-3 py-1 rounded mr-2" onClick={() => alert('Add Student (to implement)')}>Add Student</button>
-          <button className="bg-blue-600 text-white px-3 py-1 rounded" onClick={downloadCSV}>Download CSV</button>
+          <button
+            className="bg-green-600 text-white px-3 py-1 rounded mr-2"
+            onClick={() => alert('Add Student (to implement)')}
+          >
+            Add Student
+          </button>
+          <button
+            className="bg-blue-600 text-white px-3 py-1 rounded"
+            onClick={downloadCSV}
+          >
+            Download CSV
+          </button>
         </div>
       </div>
       <table className="min-w-full mb-8 border border-gray-300 dark:border-gray-700">
@@ -70,6 +108,8 @@ const StudentList: React.FC = () => {
             <th className="py-2 px-4 border-b">Codeforces Handle</th>
             <th className="py-2 px-4 border-b">Current Rating</th>
             <th className="py-2 px-4 border-b">Max Rating</th>
+            <th className="py-2 px-4 border-b">Last Synced</th>
+            <th className="py-2 px-4 border-b">Auto Reminder</th>
             <th className="py-2 px-4 border-b">Actions</th>
           </tr>
         </thead>
@@ -82,10 +122,42 @@ const StudentList: React.FC = () => {
               <td className="py-2 px-4 border-b">{student.codeforcesHandle}</td>
               <td className="py-2 px-4 border-b">{student.currentRating}</td>
               <td className="py-2 px-4 border-b">{student.maxRating}</td>
+              <td className="py-2 px-4 border-b">
+                {student.lastSyncedAt
+                  ? new Date(student.lastSyncedAt).toLocaleString()
+                  : 'Never'}
+              </td>
+              <td className="py-2 px-4 border-b">
+                <input
+                  type="checkbox"
+                  checked={!student.disableAutoEmail}
+                  onChange={e =>
+                    updateStudent({
+                      ...student,
+                      disableAutoEmail: !e.target.checked // invert logic
+                    })
+                  }
+                />
+              </td>
               <td className="py-2 px-4 border-b flex gap-2 justify-center">
-                <button className="bg-blue-500 text-white px-2 py-1 rounded" onClick={() => navigate(`/student/${student.id}`)}>View</button>
-                <button className="bg-yellow-500 text-white px-2 py-1 rounded" onClick={() => alert('Edit Student (to implement)')}>Edit</button>
-                <button className="bg-red-600 text-white px-2 py-1 rounded" onClick={() => handleDelete(student.id)}>Delete</button>
+                <button
+                  className="bg-blue-500 text-white px-2 py-1 rounded"
+                  onClick={() => navigate(`/student/${student.id}`)}
+                >
+                  View
+                </button>
+                <button
+                  className="bg-yellow-500 text-white px-2 py-1 rounded"
+                  onClick={() => alert('Edit Student (to implement)')}
+                >
+                  Edit
+                </button>
+                <button
+                  className="bg-red-600 text-white px-2 py-1 rounded"
+                  onClick={() => handleDelete(student.id)}
+                >
+                  Delete
+                </button>
               </td>
             </tr>
           ))}

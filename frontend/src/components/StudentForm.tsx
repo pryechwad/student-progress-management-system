@@ -91,7 +91,7 @@ const StudentForm: React.FC<StudentFormProps> = ({
           onSubmit={(e) => {
             e.preventDefault();
             if (!validate()) return;
-            // ✅ use type-safe payload matching backend
+            //  use type-safe payload matching backend
             const payload: SubmitPayload = {
               name: form.name,
               email: form.email,
@@ -160,7 +160,7 @@ const StudentForm: React.FC<StudentFormProps> = ({
             required
           />
           <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-            If unknown, leave as 0
+            If Current Rating unknown, leave as 0
           </div>
           <input
             className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
@@ -173,7 +173,7 @@ const StudentForm: React.FC<StudentFormProps> = ({
             required
           />
           <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-            If Rating unknown, leave as 0
+            If MaxRating unknown, leave as 0
           </div>
           <div className="flex flex-col sm:flex-row justify-end gap-2 mt-4">
             <button
