@@ -1,22 +1,24 @@
+// utils/sendReminderEmail.js
 const nodemailer = require('nodemailer');
+require('dotenv').config();
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+const sendReminderEmail = async (to, name) => {
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
 
-const sendReminderEmail = (to, name) => {
   const mailOptions = {
-    from: process.env.EMAIL_USER,
+    from: `"SPMS Bot" <${process.env.EMAIL_USER}>`,
     to,
-    subject: `Keep solving, ${name}!`,
-    text: `Hi ${name},\n\nWe noticed you haven't solved any problems recently. Keep practicing to improve your skills!\n\nHappy coding!`,
+    subject: '⏰ Codeforces Inactivity Reminder',
+    text: `Hi ${name},\n\nLooks like you've been inactive on Codeforces. Time to get back to solving problems!\n\n– SPMS`,
   };
 
-  return transporter.sendMail(mailOptions);
+  await transporter.sendMail(mailOptions);
 };
 
 module.exports = sendReminderEmail;

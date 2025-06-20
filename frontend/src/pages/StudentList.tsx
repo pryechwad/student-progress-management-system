@@ -3,15 +3,15 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 interface Student {
-  id: number;
+  id: string;
   name: string;
   email: string;
   phone: string;
   codeforcesHandle: string;
   currentRating: number;
   maxRating: number;
-  lastSyncedAt?: string; // ✅ add this
-  disableAutoEmail?: boolean; // ✅ add this
+  lastSyncedAt?: string;
+  disableAutoEmail?: boolean;
 }
 
 const StudentList: React.FC = () => {
@@ -32,12 +32,11 @@ const StudentList: React.FC = () => {
       });
   }, []);
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     await axios.delete(`http://localhost:5000/api/students/${id}`);
     setStudents(students.filter(s => s.id !== id));
   };
 
-  // ✅ NEW: Update student (for toggle)
   const updateStudent = async (updatedStudent: Student) => {
     await axios.put(`http://localhost:5000/api/students/${updatedStudent.id}`, updatedStudent);
     setStudents(prev =>
@@ -87,7 +86,7 @@ const StudentList: React.FC = () => {
         <div>
           <button
             className="bg-green-600 text-white px-3 py-1 rounded mr-2"
-            onClick={() => alert('Add Student (to implement)')}
+            onClick={() => navigate('/add')}
           >
             Add Student
           </button>
@@ -134,7 +133,7 @@ const StudentList: React.FC = () => {
                   onChange={e =>
                     updateStudent({
                       ...student,
-                      disableAutoEmail: !e.target.checked // invert logic
+                      disableAutoEmail: !e.target.checked
                     })
                   }
                 />
@@ -148,7 +147,7 @@ const StudentList: React.FC = () => {
                 </button>
                 <button
                   className="bg-yellow-500 text-white px-2 py-1 rounded"
-                  onClick={() => alert('Edit Student (to implement)')}
+                  onClick={() => navigate(`/edit/${student.id}`)}
                 >
                   Edit
                 </button>

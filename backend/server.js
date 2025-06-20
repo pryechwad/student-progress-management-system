@@ -1,24 +1,36 @@
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
-const cors = require('cors'); // 👈 yeh add karo
+const cors = require('cors');
+
+// ✅ Import cron logic
+const { fetchAndUpdateCodeforcesData, job } = require('./config/cron');
+
+// ✅ Import routes
 const studentRoutes = require('./routes/studentRoutes');
 const syncRoutes = require('./routes/syncRoutes');
-const runDailySync = require('./config/cron');
+const codeforcesRoutes = require('./routes/codeforcesRoutes'); // ✅ OPTIONAL if you have custom CF endpoints
 
 const app = express();
-app.use(cors()); // 👈 yeh zaroor add karo
+app.use(cors());
 app.use(express.json());
 
+// ✅ Connect MongoDB
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))
-  .catch((err) => console.log("❌ MongoDB connection error:", err));
+  .catch((err) => console.error("❌ MongoDB connection error:", err));
 
+// ✅ Use routes
 app.use('/api/students', studentRoutes);
 app.use('/api/sync', syncRoutes);
+app.use('/api/codeforces', codeforcesRoutes); // ✅ If you have additional CF endpoints
 
-runDailySync();
+// ✅ Start daily cron
+job.start();
+
+// ✅ OPTIONAL: run once immediately when server starts
+fetchAndUpdateCodeforcesData();
 
 app.listen(5000, () => {
-  console.log('Server running on port 5000');
+  console.log('🚀 Server running on http://localhost:5000');
 });

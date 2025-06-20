@@ -12,6 +12,11 @@ const studentSchema = new mongoose.Schema({
     unique: true, // optional, helps avoid duplicates
     lowercase: true
   },
+  phone: {                 // ✅ Added phone
+    type: String,
+    required: true,
+    trim: true
+  },
   cfHandle: {
     type: String,
     required: true,
@@ -29,18 +34,16 @@ const studentSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
-  // How many inactivity reminder emails sent so far
   inactivityRemindersSent: {
     type: Number,
     default: 0
   },
-  // If true, don't send auto inactivity emails for this student
   disableAutoEmail: {
     type: Boolean,
     default: false
   }
 }, {
-  timestamps: true // adds createdAt & updatedAt automatically
+  timestamps: true
 });
 
 module.exports = mongoose.model('Student', studentSchema);

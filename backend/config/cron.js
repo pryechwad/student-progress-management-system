@@ -1,7 +1,7 @@
 const cron = require('node-cron');
 const axios = require('axios');
-const Student = require('./models/Student');
-const sendReminderEmail = require('./utils/sendReminderEmail');
+const Student = require('../models/Student');  // ✅ FIXED PATH
+const sendReminderEmail = require('../utils/sendReminderEmail');  // ✅ FIXED PATH
 
 // Example: runs every day at 2 AM
 let cronExpression = '0 2 * * *'; // default 2 AM
@@ -26,8 +26,6 @@ const fetchAndUpdateCodeforcesData = async () => {
       student.maxRating = data.maxRating;
       student.lastCFUpdate = new Date();
 
-      // TODO: Fetch submissions & contests as needed for profile view
-
       // Save updated student
       await student.save();
 
@@ -36,14 +34,14 @@ const fetchAndUpdateCodeforcesData = async () => {
         `https://codeforces.com/api/user.status?handle=${student.codeforcesHandle}`
       );
       const recent = submissions.data.result.filter(
-        (s) => new Date(s.creationTimeSeconds * 1000) >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+        (s) =>
+          new Date(s.creationTimeSeconds * 1000) >=
+          new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
       );
 
-      if (recent.length === 0 && student.autoReminderEnabled) {
-        // Send reminder email
+      if (recent.length === 0 && !student.disableAutoEmail) {
+        // NOTE: changed to !disableAutoEmail for consistency
         await sendReminderEmail(student.email, student.name);
-        student.reminderCount += 1;
-        await student.save();
         console.log(`Reminder sent to ${student.name}`);
       }
 

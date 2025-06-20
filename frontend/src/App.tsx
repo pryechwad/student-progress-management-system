@@ -1,12 +1,14 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "./context/ThemeContext";
 
-import StudentList from "./pages/StudentList";
-import StudentProfile from "./pages/StudentProfile";
-import NotFound from "./pages/NotFound";
-
 import Header from "./components/common/Header";
 import Container from "./components/layout/Container";
+
+import StudentList from "./pages/StudentList";
+import StudentProfile from "./pages/StudentProfile";
+import AddStudent from "./components/student/AddStudent";
+import EditStudent from "./components/student/EditStudent";
+import NotFound from "./pages/NotFound";
 
 function App() {
   return (
@@ -18,6 +20,8 @@ function App() {
             <Routes>
               <Route path="/" element={<StudentList />} />
               <Route path="/student/:id" element={<StudentProfile />} />
+              <Route path="/add" element={<AddStudent />} />
+              <Route path="/edit/:id" element={<EditStudent />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Container>
@@ -28,4 +32,3 @@ function App() {
 }
 
 export default App;
-
