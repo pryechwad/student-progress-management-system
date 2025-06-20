@@ -11,6 +11,8 @@ interface Student {
   currentRating: number;
   maxRating: number;
   lastSyncedAt?: string;
+  lastCFUpdate?: string;
+  inactivityRemindersSent: number;
   disableAutoEmail?: boolean;
 }
 
@@ -107,7 +109,8 @@ const StudentList: React.FC = () => {
             <th className="py-2 px-4 border-b">Codeforces Handle</th>
             <th className="py-2 px-4 border-b">Current Rating</th>
             <th className="py-2 px-4 border-b">Max Rating</th>
-            <th className="py-2 px-4 border-b">Last Synced</th>
+            <th className="py-2 px-4 border-b">Last CF Update</th>
+            <th className="py-2 px-4 border-b">Reminders Sent</th>
             <th className="py-2 px-4 border-b">Auto Reminder</th>
             <th className="py-2 px-4 border-b">Actions</th>
           </tr>
@@ -122,10 +125,11 @@ const StudentList: React.FC = () => {
               <td className="py-2 px-4 border-b">{student.currentRating}</td>
               <td className="py-2 px-4 border-b">{student.maxRating}</td>
               <td className="py-2 px-4 border-b">
-                {student.lastSyncedAt
-                  ? new Date(student.lastSyncedAt).toLocaleString()
+                {student.lastCFUpdate
+                  ? new Date(student.lastCFUpdate).toLocaleString()
                   : 'Never'}
               </td>
+              <td className="py-2 px-4 border-b">{student.inactivityRemindersSent || 0}</td>
               <td className="py-2 px-4 border-b">
                 <input
                   type="checkbox"

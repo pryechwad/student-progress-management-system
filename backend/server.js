@@ -23,7 +23,8 @@ mongoose.connect(process.env.MONGO_URI)
 // ✅ Use routes
 app.use('/api/students', studentRoutes);
 app.use('/api/sync', syncRoutes);
-app.use('/api/codeforces', codeforcesRoutes); // ✅ If you have additional CF endpoints
+app.use('/api/codeforces', codeforcesRoutes);
+app.use('/api/settings', require('./routes/settings'));
 
 // ✅ Start daily cron
 job.start();

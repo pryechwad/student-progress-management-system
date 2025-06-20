@@ -34,6 +34,10 @@ const studentSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
+  lastCFUpdate: {
+    type: Date,
+    default: null
+  },
   inactivityRemindersSent: {
     type: Number,
     default: 0

@@ -8,6 +8,7 @@ import StudentList from "./pages/StudentList";
 import StudentProfile from "./pages/StudentProfile";
 import AddStudent from "./components/student/AddStudent";
 import EditStudent from "./components/student/EditStudent";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
               <Route path="/student/:id" element={<StudentProfile />} />
               <Route path="/add" element={<AddStudent />} />
               <Route path="/edit/:id" element={<EditStudent />} />
+              <Route path="/settings" element={<Settings />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Container>

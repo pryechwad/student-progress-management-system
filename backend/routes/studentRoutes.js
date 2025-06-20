@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Student = require('../models/Student');
 const axios = require('axios');
+const { updateSingleStudentCFData } = require('../config/cron');
 
 // ✅ Helper
 const fetchCodeforcesInfo = async (handle) => {
@@ -95,10 +96,9 @@ router.put('/:id', async (req, res) => {
 
     if (codeforcesHandle && codeforcesHandle !== student.cfHandle) {
       student.cfHandle = codeforcesHandle;
-      const cfData = await fetchCodeforcesInfo(codeforcesHandle);
-      student.currentRating = cfData.currentRating;
-      student.maxRating = cfData.maxRating;
-      student.lastCFUpdate = cfData.lastCFUpdate;
+      await student.save();
+      // Update CF data in real-time when handle changes
+      await updateSingleStudentCFData(student._id);
     }
 
     await student.save();
