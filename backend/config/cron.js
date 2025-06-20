@@ -1,7 +1,9 @@
 const cron = require('node-cron');
 const axios = require('axios');
-const Student = require('../models/Student');  // ✅ FIXED PATH
-const sendReminderEmail = require('../utils/sendReminderEmail');  // ✅ FIXED PATH
+const Student = require('../models/Student');
+const Contest = require('../models/Contest');
+const Submission = require('../models/Submission');
+const sendReminderEmail = require('../utils/sendReminderEmail');
 
 // Example: runs every day at 2 AM
 let cronExpression = '0 2 * * *'; // default 2 AM
@@ -16,22 +18,66 @@ const fetchAndUpdateCodeforcesData = async () => {
 
     try {
       // Fetch Codeforces user info
-      const res = await axios.get(
+      const userRes = await axios.get(
         `https://codeforces.com/api/user.info?handles=${student.cfHandle}`
       );
-      const data = res.data.result[0];
+      const userData = userRes.data.result[0];
 
       // Update rating info
-      student.currentRating = data.rating || 0;
-      student.maxRating = data.maxRating || 0;
+      student.currentRating = userData.rating || 0;
+      student.maxRating = userData.maxRating || 0;
       student.lastCFUpdate = new Date();
       student.lastSyncedAt = new Date();
 
-      // Inactivity check: submissions in last 7 days?
-      const submissions = await axios.get(
+      // Fetch contest history
+      const contestRes = await axios.get(
+        `https://codeforces.com/api/user.rating?handle=${student.cfHandle}`
+      );
+      
+      // Store contest data
+      for (const contest of contestRes.data.result) {
+        await Contest.findOneAndUpdate(
+          { studentId: student._id, contestId: contest.contestId },
+          {
+            studentId: student._id,
+            contestId: contest.contestId,
+            contestName: contest.contestName,
+            rank: contest.rank,
+            oldRating: contest.oldRating,
+            newRating: contest.newRating,
+            ratingChange: contest.newRating - contest.oldRating,
+            participationTimeSeconds: contest.ratingUpdateTimeSeconds
+          },
+          { upsert: true }
+        );
+      }
+
+      // Fetch submissions
+      const submissionRes = await axios.get(
         `https://codeforces.com/api/user.status?handle=${student.cfHandle}`
       );
-      const recent = submissions.data.result.filter(
+      
+      // Store submission data
+      for (const sub of submissionRes.data.result.slice(0, 1000)) { // Limit to recent 1000
+        await Submission.findOneAndUpdate(
+          { submissionId: sub.id },
+          {
+            studentId: student._id,
+            submissionId: sub.id,
+            contestId: sub.contestId,
+            problemIndex: sub.problem.index,
+            problemName: sub.problem.name,
+            problemRating: sub.problem.rating,
+            verdict: sub.verdict,
+            creationTimeSeconds: sub.creationTimeSeconds,
+            programmingLanguage: sub.programmingLanguage
+          },
+          { upsert: true }
+        );
+      }
+
+      // Inactivity check: submissions in last 7 days?
+      const recent = submissionRes.data.result.filter(
         (s) =>
           new Date(s.creationTimeSeconds * 1000) >=
           new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)

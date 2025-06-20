@@ -12,14 +12,14 @@ const studentSchema = new mongoose.Schema({
     unique: true, // optional, helps avoid duplicates
     lowercase: true
   },
-  phone: {                 // ✅ Added phone
+  phone: {
     type: String,
-    required: true,
+    required: false,
     trim: true
   },
   cfHandle: {
     type: String,
-    required: true,
+    required: false,
     trim: true
   },
   currentRating: {

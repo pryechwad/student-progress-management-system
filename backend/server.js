@@ -18,13 +18,17 @@ app.use(express.json());
 // ✅ Connect MongoDB
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))
-  .catch((err) => console.error("❌ MongoDB connection error:", err));
+  .catch((err) => {
+    console.error("❌ MongoDB connection error:", err);
+    console.log("Continuing without MongoDB - using in-memory storage");
+  });
 
 // ✅ Use routes
 app.use('/api/students', studentRoutes);
 app.use('/api/sync', syncRoutes);
 app.use('/api/codeforces', codeforcesRoutes);
 app.use('/api/settings', require('./routes/settings'));
+app.use('/api/profile', require('./routes/profileRoutes'));
 
 // ✅ Start daily cron
 job.start();

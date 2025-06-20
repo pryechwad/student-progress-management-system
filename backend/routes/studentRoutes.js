@@ -1,47 +1,30 @@
 const express = require('express');
 const router = express.Router();
-const Student = require('../models/Student');
-const axios = require('axios');
-const { updateSingleStudentCFData } = require('../config/cron');
-
-// ✅ Helper
-const fetchCodeforcesInfo = async (handle) => {
-  const { data } = await axios.get(`https://codeforces.com/api/user.info?handles=${handle}`);
-  const info = data.result[0];
-  return {
-    currentRating: info.rating || 0,
-    maxRating: info.maxRating || 0,
-    lastCFUpdate: new Date(),
-  };
-};
+const { students, getNextId } = require('../mockData');
 
 // ✅ CREATE
 router.post('/', async (req, res) => {
   try {
     const { name, email, phone, codeforcesHandle, currentRating, maxRating } = req.body;
-    const student = new Student({ 
-      name, 
-      email, 
-      phone, 
-      cfHandle: codeforcesHandle,
+    
+    const student = {
+      id: getNextId().toString(),
+      name: name || '',
+      email: email || '',
+      phone: phone || '',
+      codeforcesHandle: codeforcesHandle || '',
       currentRating: currentRating || 0,
-      maxRating: maxRating || 0
-    });
+      maxRating: maxRating || 0,
+      lastCFUpdate: null,
+      inactivityRemindersSent: 0,
+      disableAutoEmail: false
+    };
 
-    if (codeforcesHandle) {
-      const cfData = await fetchCodeforcesInfo(codeforcesHandle);
-      student.currentRating = cfData.currentRating;
-      student.maxRating = cfData.maxRating;
-      student.lastCFUpdate = cfData.lastCFUpdate;
-    }
-
-    await student.save();
-    // Map _id to id and cfHandle to codeforcesHandle when returning
-    const { _id, cfHandle, ...rest } = student.toObject();
-    res.status(201).json({ id: _id, codeforcesHandle: cfHandle, ...rest });
+    students.push(student);
+    res.status(201).json(student);
 
   } catch (err) {
-    console.error(err);
+    console.error('Error creating student:', err);
     res.status(400).json({ error: err.message });
   }
 });
@@ -49,28 +32,20 @@ router.post('/', async (req, res) => {
 // ✅ READ ALL
 router.get('/', async (req, res) => {
   try {
-    const students = await Student.find();
-    // Map _id to id and cfHandle to codeforcesHandle for each student
-    const formatted = students.map(s => {
-      const { _id, cfHandle, ...rest } = s.toObject();
-      return { id: _id, codeforcesHandle: cfHandle, ...rest };
-    });
-    res.json(formatted);
+    res.json(students);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// ✅ READ ONE — IMPORTANT ✅
+// ✅ READ ONE
 router.get('/:id', async (req, res) => {
   try {
-    const student = await Student.findById(req.params.id);
+    const student = students.find(s => s.id === req.params.id);
     if (!student) {
       return res.status(404).json({ error: 'Student not found' });
     }
-    // Map _id to id and cfHandle to codeforcesHandle
-    const { _id, cfHandle, ...rest } = student.toObject();
-    res.json({ id: _id, codeforcesHandle: cfHandle, ...rest });
+    res.json(student);
 
   } catch (err) {
     console.error(err);
@@ -81,30 +56,24 @@ router.get('/:id', async (req, res) => {
 // ✅ UPDATE
 router.put('/:id', async (req, res) => {
   try {
-    const student = await Student.findById(req.params.id);
-    if (!student) {
+    const studentIndex = students.findIndex(s => s.id === req.params.id);
+    if (studentIndex === -1) {
       return res.status(404).json({ error: 'Student not found' });
     }
 
-    const { name, email, phone, codeforcesHandle, currentRating, maxRating } = req.body;
+    const { name, email, phone, codeforcesHandle, currentRating, maxRating, disableAutoEmail } = req.body;
+    const student = students[studentIndex];
 
-    student.name = name || student.name;
-    student.email = email || student.email;
-    student.phone = phone || student.phone;
+    if (name !== undefined) student.name = name;
+    if (email !== undefined) student.email = email;
+    if (phone !== undefined) student.phone = phone;
+    if (codeforcesHandle !== undefined) student.codeforcesHandle = codeforcesHandle;
     if (currentRating !== undefined) student.currentRating = currentRating;
     if (maxRating !== undefined) student.maxRating = maxRating;
+    if (disableAutoEmail !== undefined) student.disableAutoEmail = disableAutoEmail;
 
-    if (codeforcesHandle && codeforcesHandle !== student.cfHandle) {
-      student.cfHandle = codeforcesHandle;
-      await student.save();
-      // Update CF data in real-time when handle changes
-      await updateSingleStudentCFData(student._id);
-    }
-
-    await student.save();
-    // Map _id to id and cfHandle to codeforcesHandle
-    const { _id, cfHandle, ...rest } = student.toObject();
-    res.json({ id: _id, codeforcesHandle: cfHandle, ...rest });
+    students[studentIndex] = student;
+    res.json(student);
 
   } catch (err) {
     console.error(err);
@@ -115,10 +84,11 @@ router.put('/:id', async (req, res) => {
 // ✅ DELETE
 router.delete('/:id', async (req, res) => {
   try {
-    const student = await Student.findByIdAndDelete(req.params.id);
-    if (!student) {
+    const studentIndex = students.findIndex(s => s.id === req.params.id);
+    if (studentIndex === -1) {
       return res.status(404).json({ error: 'Student not found' });
     }
+    students.splice(studentIndex, 1);
     res.json({ message: 'Student deleted successfully' });
   } catch (err) {
     res.status(500).json({ error: err.message });
