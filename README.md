@@ -79,7 +79,7 @@ Sync time & frequency configurable
 Show last sync timestamp for each student in the table
 
 If a student’s CF handle is updated, their data re-syncs immediately
-![image](https://github.com/user-attachments/assets/205325b4-f046-491c-aa9c-697f2bd75f24)
+
 
 
 📧 Inactivity Detection
